@@ -1,0 +1,62 @@
+name: Experimental Flax Android ARM64 build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    name: Build Flax game target for Android ARM64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout probe repository
+        uses: actions/checkout@v4
+
+      - name: Install Git LFS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
+          git lfs install
+
+      - name: Checkout Flax Engine source
+        uses: actions/checkout@v4
+        with:
+          repository: FlaxEngine/FlaxEngine
+          ref: master
+          path: FlaxEngine
+          lfs: true
+          submodules: recursive
+
+      - name: Set up .NET SDK used by current Flax CI
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android SDK platform and NDK
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018"
+
+      - name: Verify Android SDK and NDK detection
+        working-directory: FlaxEngine
+        run: |
+          ./Development/Scripts/Linux/CallBuildTool.sh -log -printSDKs -dotnet=10
+
+      - name: Attempt Android ARM64 game-target build
+        working-directory: FlaxEngine
+        run: |
+          ./Development/Scripts/Linux/CallBuildTool.sh -build -log -printSDKs -dotnet=10 -arch=ARM64 -platform=Android -configuration=Development -buildtargets=FlaxGame
