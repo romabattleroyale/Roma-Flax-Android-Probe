@@ -24,8 +24,12 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Install Android SDK tools
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
       - name: Install Android platform and NDK
-        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018"
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018"
       - name: Install .NET Android workload
         run: dotnet workload install android
       - name: Report installed toolchain
