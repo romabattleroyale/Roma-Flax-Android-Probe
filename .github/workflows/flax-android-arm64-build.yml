@@ -15,10 +15,10 @@ jobs:
       - name: Checkout probe repository
         uses: actions/checkout@v4
 
-      - name: Install Git LFS
+      - name: Install Linux editor build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git-lfs
+          sudo apt-get install -y git-lfs libwayland-dev
           git lfs install
 
       - name: Checkout Flax Engine source
