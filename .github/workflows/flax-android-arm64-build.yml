@@ -10,7 +10,7 @@ jobs:
   build-android:
     name: Build Flax game target for Android ARM64
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - name: Checkout probe repository
         uses: actions/checkout@v4
@@ -60,12 +60,36 @@ jobs:
           install_runtime: false
           cache: true
 
+      - name: Checkout Flax sample project
+        uses: actions/checkout@v4
+        with:
+          repository: FlaxEngine/FlaxSamples
+          ref: master
+          path: FlaxSamples
+
+      - name: Configure sample project for Android packaging
+        run: |
+          cp "FlaxEngine/.github/data/Build Settings.json" "FlaxSamples/MaterialsFeaturesTour/Content/Settings/Build Settings.json"
+          cp "FlaxEngine/.github/data/ExitOnEsc.cs" "FlaxSamples/MaterialsFeaturesTour/Source/Game/ExitOnEsc.cs"
+
       - name: Verify Android SDK and NDK detection
         working-directory: FlaxEngine
         run: |
           ./Development/Scripts/Linux/CallBuildTool.sh -log -printSDKs -dotnet=10
 
-      - name: Attempt Android ARM64 game-target build
+      - name: Build Flax editor for headless game cooking
         working-directory: FlaxEngine
         run: |
-          ./Development/Scripts/Linux/CallBuildTool.sh -build -log -printSDKs -dotnet=10 -arch=ARM64 -platform=Android -configuration=Development -buildtargets=FlaxGame
+          ./Development/Scripts/Linux/CallBuildTool.sh -build -log -printSDKs -dotnet=10 -arch=x64 -platform=Linux -configuration=Development -buildtargets=FlaxEditor
+
+      - name: Cook and package sample game as Android APK
+        working-directory: FlaxEngine
+        run: |
+          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/MaterialsFeaturesTour" -build "Development.Android" -exit
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: flax-android-arm64-apk
+          path: FlaxSamples/MaterialsFeaturesTour/Output/Android/**/*.apk
+          if-no-files-found: error
