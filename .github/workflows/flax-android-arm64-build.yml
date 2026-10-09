@@ -71,6 +71,19 @@ jobs:
         run: |
           cp "FlaxEngine/.github/data/Build Settings.json" "FlaxSamples/BasicTemplate/Content/Settings/Build Settings.json"
           cp "FlaxEngine/.github/data/ExitOnEsc.cs" "FlaxSamples/BasicTemplate/Source/Game/ExitOnEsc.cs"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          build_path = Path("FlaxSamples/BasicTemplate/Content/Settings/Build Settings.json")
+          build = json.loads(build_path.read_text())
+          build.setdefault("Data", {})["SkipPackaging"] = False
+          build_path.write_text(json.dumps(build, indent=2) + "\n")
+          android_path = Path("FlaxSamples/BasicTemplate/Content/Settings/Android Settings.json")
+          android = json.loads(android_path.read_text())
+          android.setdefault("Data", {})["TexturesQuality"] = "Uncompressed"
+          android_path.write_text(json.dumps(android, indent=2) + "\n")
+          print("Configured APK packaging and disabled ASTC-only compression for this Linux probe.")
+          PY
 
       - name: Verify Android SDK and NDK detection
         working-directory: FlaxEngine
