@@ -1,28 +1,26 @@
-name: Unity Personal License Activation Request
+name: Unity CI License Preflight
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - ".github/workflows/unity-activation.yml"
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  request-activation:
-    name: Generate Unity activation file on Ubuntu
+  preflight:
+    name: Check Unity license prerequisites on Ubuntu
     runs-on: ubuntu-latest
     steps:
-      - name: Generate activation request for Unity 6
-        id: activation
-        uses: game-ci/unity-request-activation-file@v2
-        with:
-          unityVersion: 6000.3.0f1
-      - name: Upload activation request
-        uses: actions/upload-artifact@v4
-        with:
-          name: unity-personal-activation-request
-          path: ${{ steps.activation.outputs.filePath }}
-          if-no-files-found: error
-          retention-days: 7
+      - name: Confirm Ubuntu runner
+        run: |
+          echo "Ubuntu runner is available."
+          lsb_release -a
+      - name: Explain required Unity Personal license setup
+        run: |
+          echo "::notice title=Unity Personal license required::The old game-ci/unity-request-activation-file action is retired and cannot generate an activation artifact."
+          echo "Current GameCI instructions require a Unity Personal .ulf license file created with Unity Hub, then stored as the UNITY_LICENSE GitHub Actions secret."
+          echo "No Unity build is started until that secret exists, to avoid wasting runner time."
+          echo "Official instructions: https://game.ci/docs/github/activation/"
