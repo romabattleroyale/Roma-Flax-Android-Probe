@@ -130,7 +130,7 @@ jobs:
           camera = next(x for x in data["Data"] if x.get("TypeName") == "FlaxEngine.Camera")
           # A truly minimal scene: scene root + one camera, no meshes, lights, UI, probes, or gameplay scripts.
           data["Data"] = [root, camera]
-          p.write_text(json.dumps(data, indent=2) + "\\n")
+          p.write_text(json.dumps(data, indent=2) + "\n")
           check = json.loads(p.read_text())
           assert len(check["Data"]) == 2 and check["Data"][1]["TypeName"] == "FlaxEngine.Camera"
           print("Verified minimal scene actors:", [x["TypeName"] for x in check["Data"]])
