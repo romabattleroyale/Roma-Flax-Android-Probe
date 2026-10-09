@@ -126,14 +126,21 @@ jobs:
           data, end = json.JSONDecoder().raw_decode(raw.lstrip())
           trailing = raw.lstrip()[end:].strip()
           print("Scene file parsed; trailing bytes ignored:", len(trailing))
-          root = next(x for x in data["Data"] if x.get("TypeName") == "FlaxEngine.Scene")
-          camera = next(x for x in data["Data"] if x.get("TypeName") == "FlaxEngine.Camera")
-          # A truly minimal scene: scene root + one camera, no meshes, lights, UI, probes, or gameplay scripts.
-          data["Data"] = [root, camera]
+          actors = data["Data"]
+          root = next(x for x in actors if x.get("TypeName") == "FlaxEngine.Scene")
+          camera = next(x for x in actors if x.get("TypeName") == "FlaxEngine.Camera")
+          cube = next(x for x in actors if x.get("TypeName") == "FlaxEngine.StaticModel" and x.get("Name") == "Cube")
+          light = next(x for x in actors if x.get("TypeName") == "FlaxEngine.DirectionalLight")
+          # One geometry actor + camera + one light. Move the cube to the origin and camera to a close, known position.
+          cube["Transform"] = {"Translation": {"X": 0.0, "Y": 0.0, "Z": 0.0}, "Scale": {"X": 1.0, "Y": 1.0, "Z": 1.0}}
+          camera["Transform"] = {"Translation": {"X": 0.0, "Y": 2.0, "Z": -6.0}, "Orientation": {"X": 0.0, "Y": 0.0, "Z": 0.0, "W": 1.0}}
+          # Retain only required actors to avoid unrelated scene assets and scripts.
+          data["Data"] = [root, camera, cube, light]
           p.write_text(json.dumps(data, indent=2) + "\n")
           check = json.loads(p.read_text())
-          assert len(check["Data"]) == 2 and check["Data"][1]["TypeName"] == "FlaxEngine.Camera"
-          print("Verified minimal scene actors:", [x["TypeName"] for x in check["Data"]])
+          types = [x["TypeName"] for x in check["Data"]]
+          assert len(types) == 4 and "FlaxEngine.StaticModel" in types and "FlaxEngine.Camera" in types
+          print("Verified one-mesh diagnostic scene actors:", types)
           PY
           ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/BasicTemplate" -build "Development.Android"
           APK="$(find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print -quit)"
