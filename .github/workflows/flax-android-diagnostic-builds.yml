@@ -122,7 +122,10 @@ jobs:
           import json
           from pathlib import Path
           p = Path("../FlaxSamples/BasicTemplate/Content/Scenes/Main.scene")
-          data = json.loads(p.read_text())
+          raw = p.read_text()
+          data, end = json.JSONDecoder().raw_decode(raw.lstrip())
+          trailing = raw.lstrip()[end:].strip()
+          print("Scene file parsed; trailing bytes ignored:", len(trailing))
           root = next(x for x in data["Data"] if x.get("TypeName") == "FlaxEngine.Scene")
           camera = next(x for x in data["Data"] if x.get("TypeName") == "FlaxEngine.Camera")
           # A truly minimal scene: scene root + one camera, no meshes, lights, UI, probes, or gameplay scripts.
