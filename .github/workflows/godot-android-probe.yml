@@ -1,0 +1,80 @@
+name: Godot Android Probe
+
+on:
+  push:
+    paths:
+      - "godot-probe/**"
+      - ".github/workflows/godot-android-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-export:
+    name: Validate Godot project and export Android APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.1" "cmdline-tools;latest" "ndk;28.1.13356709" "cmake;3.10.2.4988404"
+          yes | sdkmanager --licenses
+
+      - name: Download Godot 4.6 and Android export templates
+        run: |
+          set -euxo pipefail
+          mkdir -p "$RUNNER_TEMP/godot" "$HOME/.local/share/godot/export_templates/4.6.stable"
+          curl -fL --retry 3 "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip" -o "$RUNNER_TEMP/godot/godot.zip"
+          unzip -q "$RUNNER_TEMP/godot/godot.zip" -d "$RUNNER_TEMP/godot"
+          sudo install -m 0755 "$RUNNER_TEMP/godot/Godot_v4.6-stable_linux.x86_64" /usr/local/bin/godot
+          curl -fL --retry 3 "https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_export_templates.tpz" -o "$RUNNER_TEMP/godot/templates.tpz"
+          mkdir -p "$RUNNER_TEMP/godot/templates"
+          unzip -q "$RUNNER_TEMP/godot/templates.tpz" -d "$RUNNER_TEMP/godot/templates"
+          cp -a "$RUNNER_TEMP/godot/templates/templates/." "$HOME/.local/share/godot/export_templates/4.6.stable/"
+
+      - name: Configure Android SDK paths for Godot
+        run: |
+          mkdir -p "$HOME/.config/godot"
+          cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+          [resource]
+          export/android/java_sdk_path = "$JAVA_HOME"
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          EOF
+
+      - name: Validate project and import resources
+        run: |
+          godot --version
+          godot --headless --editor --path godot-probe --import --quit
+
+      - name: Export ARM64 Android APK
+        run: |
+          mkdir -p godot-probe/build
+          godot --headless --path godot-probe --verbose --export-debug "Android" godot-probe/build/roma-godot-probe.apk
+
+      - name: Verify APK output
+        run: |
+          test -s godot-probe/build/roma-godot-probe.apk
+          file godot-probe/build/roma-godot-probe.apk
+          unzip -t godot-probe/build/roma-godot-probe.apk | tail -n 2
+
+      - name: Upload test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: roma-godot-android-probe
+          path: godot-probe/build/roma-godot-probe.apk
+          if-no-files-found: error
+          retention-days: 7
