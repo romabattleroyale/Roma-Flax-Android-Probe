@@ -114,6 +114,24 @@ jobs:
           test -n "$APK"
           cp "$APK" ../diagnostic-artifacts/BasicTemplate-Debug.apk
 
+      - name: Build minimal-scene Android APK
+        working-directory: FlaxEngine
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("../FlaxSamples/BasicTemplate/Content/Scenes/Main.scene")
+          data = json.loads(p.read_text())
+          keep_types = {"FlaxEngine.Scene", "FlaxEngine.Camera", "FreeCamera"}
+          data["Data"] = [item for item in data["Data"] if item.get("TypeName") in keep_types]
+          p.write_text(json.dumps(data, indent=2) + "\\n")
+          print("Minimal scene entries:", [item.get("TypeName") for item in data["Data"]])
+          PY
+          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/BasicTemplate" -build "Development.Android"
+          APK="$(find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print -quit)"
+          test -n "$APK"
+          cp "$APK" ../diagnostic-artifacts/BasicTemplate-Minimal.apk
+
       - name: Upload diagnostic APKs
         uses: actions/upload-artifact@v4
         with:
