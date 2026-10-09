@@ -85,11 +85,19 @@ jobs:
       - name: Cook and package sample game as Android APK
         working-directory: FlaxEngine
         run: |
-          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/MaterialsFeaturesTour" -build "Development.Android" -exit
+          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/MaterialsFeaturesTour" -build "Development.Android"
+
+      - name: Locate packaged Android APK
+        if: always()
+        run: |
+          echo "Searching for generated APK files..."
+          find FlaxSamples/MaterialsFeaturesTour -type f -name "*.apk" -print || true
+          echo "Build output directories:"
+          find FlaxSamples/MaterialsFeaturesTour -maxdepth 4 -type d -iname "*android*" -print || true
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
           name: flax-android-arm64-apk
-          path: FlaxSamples/MaterialsFeaturesTour/Output/Android/**/*.apk
+          path: FlaxSamples/MaterialsFeaturesTour/**/*.apk
           if-no-files-found: error
