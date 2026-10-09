@@ -99,24 +99,36 @@ jobs:
       - name: Build Development Android APK
         working-directory: FlaxEngine
         run: |
-          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/BasicTemplate" -build "Development.Android"
+          set -euo pipefail
+          PROJECT="../FlaxSamples/BasicTemplate"
+          OUTPUT="$PROJECT/Output/Android/BasicTemplate.apk"
           mkdir -p ../diagnostic-artifacts
-          find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print
-          APK="$(find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print -quit)"
-          test -n "$APK"
-          cp "$APK" ../diagnostic-artifacts/BasicTemplate-Development.apk
+          find "$PROJECT" -type f -name "*.apk" -delete
+          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "$PROJECT" -build "Development.Android"
+          test -s "$OUTPUT"
+          cp "$OUTPUT" ../diagnostic-artifacts/BasicTemplate-Development.apk
+          sha256sum ../diagnostic-artifacts/BasicTemplate-Development.apk
+          ls -lh ../diagnostic-artifacts/BasicTemplate-Development.apk
 
       - name: Build Debug Android APK
         working-directory: FlaxEngine
         run: |
-          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/BasicTemplate" -build "Debug.Android"
-          APK="$(find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print -quit)"
-          test -n "$APK"
-          cp "$APK" ../diagnostic-artifacts/BasicTemplate-Debug.apk
+          set -euo pipefail
+          PROJECT="../FlaxSamples/BasicTemplate"
+          OUTPUT="$PROJECT/Output/Android/BasicTemplate.apk"
+          find "$PROJECT" -type f -name "*.apk" -delete
+          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "$PROJECT" -build "Debug.Android"
+          test -s "$OUTPUT"
+          cp "$OUTPUT" ../diagnostic-artifacts/BasicTemplate-Debug.apk
+          sha256sum ../diagnostic-artifacts/BasicTemplate-Debug.apk
+          ls -lh ../diagnostic-artifacts/BasicTemplate-Debug.apk
 
-      - name: Build genuinely empty-scene Android APK
+      - name: Build one-cube Android diagnostic APK
         working-directory: FlaxEngine
         run: |
+          set -euo pipefail
+          PROJECT="../FlaxSamples/BasicTemplate"
+          OUTPUT="$PROJECT/Output/Android/BasicTemplate.apk"
           mkdir -p ../diagnostic-artifacts
           python3 - <<'PY'
           import json
@@ -131,24 +143,19 @@ jobs:
           camera = next(x for x in actors if x.get("TypeName") == "FlaxEngine.Camera")
           cube = next(x for x in actors if x.get("TypeName") == "FlaxEngine.StaticModel" and x.get("Name") == "Cube")
           light = next(x for x in actors if x.get("TypeName") == "FlaxEngine.DirectionalLight")
-          # One geometry actor + camera + one light. Move the cube to the origin and camera to a close, known position.
           cube["Transform"] = {"Translation": {"X": 0.0, "Y": 0.0, "Z": 0.0}, "Scale": {"X": 1.0, "Y": 1.0, "Z": 1.0}}
           camera["Transform"] = {"Translation": {"X": 0.0, "Y": 2.0, "Z": -6.0}, "Orientation": {"X": 0.0, "Y": 0.0, "Z": 0.0, "W": 1.0}}
-          # Retain only required actors to avoid unrelated scene assets and scripts.
           data["Data"] = [root, camera, cube, light]
           p.write_text(json.dumps(data, indent=2) + "\n")
           check = json.loads(p.read_text())
           types = [x["TypeName"] for x in check["Data"]]
           assert len(types) == 4 and "FlaxEngine.StaticModel" in types and "FlaxEngine.Camera" in types
-          print("Verified one-mesh diagnostic scene actors:", types)
+          print("Verified one-cube diagnostic scene actors:", types)
           PY
-          # Remove any APK from earlier builds so this artifact cannot silently copy a stale scene.
-          find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -delete
-          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/BasicTemplate" -build "Development.Android"
-          mapfile -t APKS < <(find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print)
-          printf 'APK outputs after one-mesh scene build:\n%s\n' "${APKS[@]}"
-          test "${#APKS[@]}" -eq 1
-          cp "${APKS[0]}" ../diagnostic-artifacts/BasicTemplate-OneCube.apk
+          find "$PROJECT" -type f -name "*.apk" -delete
+          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "$PROJECT" -build "Development.Android"
+          test -s "$OUTPUT"
+          cp "$OUTPUT" ../diagnostic-artifacts/BasicTemplate-OneCube.apk
           sha256sum ../diagnostic-artifacts/BasicTemplate-OneCube.apk
           ls -lh ../diagnostic-artifacts/BasicTemplate-OneCube.apk
 
