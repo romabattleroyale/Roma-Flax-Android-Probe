@@ -110,19 +110,6 @@ jobs:
           sha256sum ../diagnostic-artifacts/BasicTemplate-Development.apk
           ls -lh ../diagnostic-artifacts/BasicTemplate-Development.apk
 
-      - name: Build Debug Android APK
-        working-directory: FlaxEngine
-        run: |
-          set -euo pipefail
-          PROJECT="../FlaxSamples/BasicTemplate"
-          OUTPUT="$PROJECT/Output/Android/BasicTemplate.apk"
-          find "$PROJECT" -type f -name "*.apk" -delete
-          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "$PROJECT" -build "Debug.Android"
-          test -s "$OUTPUT"
-          cp "$OUTPUT" ../diagnostic-artifacts/BasicTemplate-Debug.apk
-          sha256sum ../diagnostic-artifacts/BasicTemplate-Debug.apk
-          ls -lh ../diagnostic-artifacts/BasicTemplate-Debug.apk
-
       - name: Build one-cube Android diagnostic APK
         working-directory: FlaxEngine
         run: |
