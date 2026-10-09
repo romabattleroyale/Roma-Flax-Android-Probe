@@ -18,7 +18,7 @@ jobs:
       - name: Install Linux editor build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git-lfs libwayland-dev wayland-protocols libx11-dev libxext-dev libxfixes-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev
+          sudo apt-get install -y git-lfs libglib2.0-dev libwayland-dev wayland-protocols libx11-dev libxext-dev libxfixes-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev
           git lfs install
 
       - name: Checkout Flax Engine source
