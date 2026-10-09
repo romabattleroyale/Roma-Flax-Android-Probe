@@ -1,0 +1,118 @@
+name: Flax Android diagnostic builds
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    name: Build diagnostic Android variants
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout probe repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux editor build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-lfs libglib2.0-dev libwayland-dev wayland-protocols libx11-dev libxext-dev libxfixes-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev
+          git lfs install
+
+      - name: Checkout Flax Engine source
+        uses: actions/checkout@v4
+        with:
+          repository: FlaxEngine/FlaxEngine
+          ref: master
+          path: FlaxEngine
+          lfs: true
+          submodules: recursive
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install .NET Android workload
+        run: dotnet workload install android
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android SDK platform and NDK
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018"
+
+      - name: Install Vulkan SDK
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          install_runtime: false
+          cache: true
+
+      - name: Checkout Flax sample project
+        uses: actions/checkout@v4
+        with:
+          repository: FlaxEngine/FlaxSamples
+          ref: master
+          path: FlaxSamples
+
+      - name: Configure sample project
+        run: |
+          cp "FlaxEngine/.github/data/Build Settings.json" "FlaxSamples/BasicTemplate/Content/Settings/Build Settings.json"
+          cp "FlaxEngine/.github/data/ExitOnEsc.cs" "FlaxSamples/BasicTemplate/Source/Game/ExitOnEsc.cs"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("FlaxSamples/BasicTemplate/Content/Settings/Build Settings.json")
+          data = json.loads(p.read_text())
+          data.setdefault("Data", {})["SkipPackaging"] = False
+          p.write_text(json.dumps(data, indent=2) + "\n")
+          p = Path("FlaxSamples/BasicTemplate/Content/Settings/Android Settings.json")
+          data = json.loads(p.read_text())
+          data.setdefault("Data", {})["TexturesQuality"] = "Uncompressed"
+          p.write_text(json.dumps(data, indent=2) + "\n")
+          PY
+
+      - name: Verify Android SDK and NDK
+        working-directory: FlaxEngine
+        run: ./Development/Scripts/Linux/CallBuildTool.sh -log -printSDKs -dotnet=10
+
+      - name: Build Flax editor for headless cooking
+        working-directory: FlaxEngine
+        run: ./Development/Scripts/Linux/CallBuildTool.sh -build -log -printSDKs -dotnet=10 -arch=x64 -platform=Linux -configuration=Development -buildtargets=FlaxEditor
+
+      - name: Build Development Android APK
+        working-directory: FlaxEngine
+        run: |
+          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/BasicTemplate" -build "Development.Android"
+          mkdir -p ../diagnostic-artifacts
+          find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print
+          APK="$(find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print -quit)"
+          test -n "$APK"
+          cp "$APK" ../diagnostic-artifacts/BasicTemplate-Development.apk
+
+      - name: Build Debug Android APK
+        working-directory: FlaxEngine
+        run: |
+          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/BasicTemplate" -build "Debug.Android"
+          APK="$(find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print -quit)"
+          test -n "$APK"
+          cp "$APK" ../diagnostic-artifacts/BasicTemplate-Debug.apk
+
+      - name: Upload diagnostic APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: flax-android-diagnostic-apks
+          path: diagnostic-artifacts/*.apk
+          if-no-files-found: error
