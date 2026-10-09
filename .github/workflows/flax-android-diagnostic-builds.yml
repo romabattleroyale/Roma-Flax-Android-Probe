@@ -114,26 +114,28 @@ jobs:
           test -n "$APK"
           cp "$APK" ../diagnostic-artifacts/BasicTemplate-Debug.apk
 
-      - name: Build minimal-scene Android APK
+      - name: Build genuinely empty-scene Android APK
         working-directory: FlaxEngine
         run: |
-          # Keep the upstream scene file byte-for-byte intact for the engine cooker.
-          # The previous JSON rewrite made the SceneAsset unloadable on this engine version.
           mkdir -p ../diagnostic-artifacts
-          cp "../FlaxSamples/BasicTemplate/Content/Scenes/Main.scene" ../diagnostic-artifacts/Main-original.scene
           python3 - <<'PY'
           import json
           from pathlib import Path
           p = Path("../FlaxSamples/BasicTemplate/Content/Scenes/Main.scene")
           data = json.loads(p.read_text())
-          root = data["Data"][0]
-          # Preserve the complete serialized scene and all references; only report the actor inventory.
-          print("Scene asset valid JSON; root:", root.get("TypeName"), "entries:", len(data["Data"]))
+          root = next(x for x in data["Data"] if x.get("TypeName") == "FlaxEngine.Scene")
+          camera = next(x for x in data["Data"] if x.get("TypeName") == "FlaxEngine.Camera")
+          # A truly minimal scene: scene root + one camera, no meshes, lights, UI, probes, or gameplay scripts.
+          data["Data"] = [root, camera]
+          p.write_text(json.dumps(data, indent=2) + "\\n")
+          check = json.loads(p.read_text())
+          assert len(check["Data"]) == 2 and check["Data"][1]["TypeName"] == "FlaxEngine.Camera"
+          print("Verified minimal scene actors:", [x["TypeName"] for x in check["Data"]])
           PY
           ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/BasicTemplate" -build "Development.Android"
           APK="$(find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print -quit)"
           test -n "$APK"
-          cp "$APK" ../diagnostic-artifacts/BasicTemplate-Minimal.apk
+          cp "$APK" ../diagnostic-artifacts/BasicTemplate-EmptyScene.apk
 
       - name: Upload diagnostic APKs
         uses: actions/upload-artifact@v4
