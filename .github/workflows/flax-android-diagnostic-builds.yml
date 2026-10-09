@@ -2,6 +2,10 @@ name: Flax Android diagnostic builds
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/flax-android-diagnostic-builds.yml'
 
 permissions:
   contents: read
