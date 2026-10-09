@@ -69,8 +69,8 @@ jobs:
 
       - name: Configure sample project for Android packaging
         run: |
-          cp "FlaxEngine/.github/data/Build Settings.json" "FlaxSamples/MaterialsFeaturesTour/Content/Settings/Build Settings.json"
-          cp "FlaxEngine/.github/data/ExitOnEsc.cs" "FlaxSamples/MaterialsFeaturesTour/Source/Game/ExitOnEsc.cs"
+          cp "FlaxEngine/.github/data/Build Settings.json" "FlaxSamples/BasicTemplate/Content/Settings/Build Settings.json"
+          cp "FlaxEngine/.github/data/ExitOnEsc.cs" "FlaxSamples/BasicTemplate/Source/Game/ExitOnEsc.cs"
 
       - name: Verify Android SDK and NDK detection
         working-directory: FlaxEngine
@@ -85,19 +85,19 @@ jobs:
       - name: Cook and package sample game as Android APK
         working-directory: FlaxEngine
         run: |
-          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/MaterialsFeaturesTour" -build "Development.Android"
+          ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/BasicTemplate" -build "Development.Android"
 
       - name: Locate packaged Android APK
         if: always()
         run: |
           echo "Searching for generated APK files..."
-          find FlaxSamples/MaterialsFeaturesTour -type f -name "*.apk" -print || true
+          find FlaxSamples/BasicTemplate -type f -name "*.apk" -print || true
           echo "Build output directories:"
-          find FlaxSamples/MaterialsFeaturesTour -maxdepth 4 -type d -iname "*android*" -print || true
+          find FlaxSamples/BasicTemplate -maxdepth 4 -type d -iname "*android*" -print || true
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
           name: flax-android-arm64-apk
-          path: FlaxSamples/MaterialsFeaturesTour/**/*.apk
+          path: FlaxSamples/BasicTemplate/**/*.apk
           if-no-files-found: error
