@@ -142,10 +142,15 @@ jobs:
           assert len(types) == 4 and "FlaxEngine.StaticModel" in types and "FlaxEngine.Camera" in types
           print("Verified one-mesh diagnostic scene actors:", types)
           PY
+          # Remove any APK from earlier builds so this artifact cannot silently copy a stale scene.
+          find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -delete
           ./Binaries/Editor/Linux/Development/FlaxEditor -std -headless -mute -null -project "../FlaxSamples/BasicTemplate" -build "Development.Android"
-          APK="$(find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print -quit)"
-          test -n "$APK"
-          cp "$APK" ../diagnostic-artifacts/BasicTemplate-EmptyScene.apk
+          mapfile -t APKS < <(find "../FlaxSamples/BasicTemplate" -type f -name "*.apk" -print)
+          printf 'APK outputs after one-mesh scene build:\n%s\n' "${APKS[@]}"
+          test "${#APKS[@]}" -eq 1
+          cp "${APKS[0]}" ../diagnostic-artifacts/BasicTemplate-OneCube.apk
+          sha256sum ../diagnostic-artifacts/BasicTemplate-OneCube.apk
+          ls -lh ../diagnostic-artifacts/BasicTemplate-OneCube.apk
 
       - name: Upload diagnostic APKs
         uses: actions/upload-artifact@v4
