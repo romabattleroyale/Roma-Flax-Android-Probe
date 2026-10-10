@@ -7,7 +7,7 @@
 <title>Il mio spazio — QuickQuote</title>
 <style>
 :root{color-scheme:dark;--bg:#101827;--panel:#182338;--line:#2a3952;--text:#f4f7fb;--muted:#a8b4c7;--accent:#8b9cff;--green:#9be2bd;--red:#ffb5b5}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}.shell{max-width:1100px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px}.brand{font-size:1.35rem;font-weight:850;letter-spacing:-.04em}.brand span{color:var(--accent)}button,a.button{display:inline-block;border:1px solid var(--line);border-radius:10px;background:#202d45;color:var(--text);padding:10px 14px;font:inherit;text-decoration:none;cursor:pointer}.hero{padding:28px 0 18px}.hero h1{font-size:clamp(1.7rem,5vw,2.5rem);letter-spacing:-.045em;margin:0}.muted{color:var(--muted)}.notice{padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:12px;margin:18px 0}.notice[data-kind=ok]{color:var(--green)}.notice[data-kind=error]{color:var(--red)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.tile,.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px;min-width:0}.tile small{color:var(--muted)}.number{font-size:2rem;font-weight:800;display:block;margin-top:4px}.panel h2{font-size:1.1rem;margin:0 0 12px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:500px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:.85rem;font-weight:600}.empty{color:var(--muted);padding:16px 0}.hidden{display:none!important}.footer{color:var(--muted);font-size:.85rem;padding:24px 0}@media(max-width:650px){.grid{grid-template-columns:1fr}.shell{padding:16px}.tile{padding:14px}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}.shell{max-width:1100px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px}.brand{font-size:1.35rem;font-weight:850;letter-spacing:-.04em}.brand span{color:var(--accent)}button,a.button{display:inline-block;border:1px solid var(--line);border-radius:10px;background:#202d45;color:var(--text);padding:10px 14px;font:inherit;text-decoration:none;cursor:pointer}.hero{padding:28px 0 18px}.hero h1{font-size:clamp(1.7rem,5vw,2.5rem);letter-spacing:-.045em;margin:0}.muted{color:var(--muted)}.notice{padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:12px;margin:18px 0}.notice[data-kind=ok]{color:var(--green)}.notice[data-kind=error]{color:var(--red)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.tile,.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px;min-width:0}.tile small{color:var(--muted)}.number{font-size:2rem;font-weight:800;display:block;margin-top:4px}.panel h2{font-size:1.1rem;margin:0 0 12px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:500px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:.85rem;font-weight:600}.empty{color:var(--muted);padding:16px 0}.customer-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;align-items:end;margin:14px 0 18px}.customer-form label{display:grid;gap:6px;color:var(--muted);font-size:.88rem}.customer-form input{width:100%;min-width:0;padding:10px;border-radius:9px;border:1px solid var(--line);background:#101827;color:var(--text);font:inherit}@media(max-width:750px){.customer-form{grid-template-columns:1fr}}.hidden{display:none!important}.footer{color:var(--muted);font-size:.85rem;padding:24px 0}@media(max-width:650px){.grid{grid-template-columns:1fr}.shell{padding:16px}.tile{padding:14px}}
 </style>
 </head>
 <body>
@@ -22,7 +22,13 @@
 <div class="tile"><small>Valore degli ultimi 10</small><span class="number" id="quoteTotal">—</span></div>
 </div>
 <section class="panel"><h2>Ultimi preventivi</h2><div class="tablewrap"><table><thead><tr><th>Numero</th><th>Descrizione</th><th>Data</th><th>Stato</th><th>Totale</th></tr></thead><tbody id="quotesRows"></tbody></table></div><p id="quoteEmpty" class="empty hidden">Non ci sono ancora preventivi salvati online.</p></section>
-<section class="panel" style="margin-top:16px"><h2>Rubrica clienti</h2><div class="tablewrap"><table><thead><tr><th>Cliente</th><th>Email</th><th>Telefono</th></tr></thead><tbody id="customersRows"></tbody></table></div><p id="customerEmpty" class="empty hidden">Non ci sono ancora clienti salvati online.</p></section>
+<section class="panel" style="margin-top:16px"><h2>Rubrica clienti</h2>
+<form id="customerForm" class="customer-form">
+<label>Nuovo cliente <input id="customerName" maxlength="160" required placeholder="Nome cliente o azienda"></label>
+<label>Email <input id="customerEmail" type="email" maxlength="254" placeholder="email@esempio.it"></label>
+<label>Telefono <input id="customerPhone" maxlength="60" placeholder="+39…"></label>
+<button type="submit" id="customerSave">Aggiungi cliente</button>
+</form><div class="tablewrap"><table><thead><tr><th>Cliente</th><th>Email</th><th>Telefono</th></tr></thead><tbody id="customersRows"></tbody></table></div><p id="customerEmpty" class="empty hidden">Non ci sono ancora clienti salvati online.</p></section>
 </div>
 <footer class="footer">Area in sviluppo. I dati online saranno disponibili dopo la configurazione di Supabase e il collegamento completo dei moduli.</footer>
 </div>
@@ -36,7 +42,7 @@ const db=configured?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 const $=id=>document.getElementById(id);
 function note(text,kind=''){ $('notice').textContent=text; if(kind)$('notice').dataset.kind=kind;else $('notice').removeAttribute('data-kind'); }
 function euro(n){return new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(n)||0)}
-function cell(text){const td=document.createElement('td');td.textContent=text??'';return td}
+function cell(text){const td=document.createElement('td');td.textContent=text??'';return td}\nlet activeUserId=null;\nasync function addCustomer(event){event.preventDefault();if(!db||!activeUserId)return;const button=$('customerSave');button.disabled=true;try{const name=$('customerName').value.trim();if(!name)throw new Error('Inserisci il nome del cliente.');const payload={user_id:activeUserId,name,email:$('customerEmail').value.trim()||null,phone:$('customerPhone').value.trim()||null};const {error}=await db.from('customers').insert(payload);if(error)throw error;$('customerForm').reset();note('Cliente salvato online.','ok');await load()}catch(error){note(error.message||'Impossibile salvare il cliente. Verifica tabelle e policy Supabase.','error')}finally{button.disabled=false}}
 async function load(){
  if(!db){note('Spazio online non ancora attivo: occorre configurare il progetto Supabase dedicato.');return}
  const {data:{session},error:sessionError}=await db.auth.getSession();
@@ -60,7 +66,7 @@ async function load(){
  note('Sessione verificata. Dati caricati dal database online.','ok');
 }
 $('signout').addEventListener('click',async()=>{if(!db)return;const {error}=await db.auth.signOut();if(error){note('Non è stato possibile uscire. Riprova.','error');return}location.href='./auth.html'});
-if(db)db.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_IN'&&session)load()});
+$('customerForm').addEventListener('submit',addCustomer);\nif(db)db.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_IN'&&session)load()});
 load().catch(()=>note('Errore di connessione. Riprova più tardi.','error'));
 </script>
 </body>
