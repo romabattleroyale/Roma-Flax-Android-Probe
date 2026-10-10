@@ -124,5 +124,18 @@ jobs:
               raise SystemExit('Unbalanced PL/pgSQL dollar quotes in Incassi draft')
           if 'incassi_guard_installment_payment' not in sql:
               raise SystemExit('Missing guard against client-side installment payment state changes')
-          print('Incassi safeguard and basic SQL delimiter checks: OK (not a SQL execution or security test)')
+          install_path = Path('quickquote-site/supabase/impresaflow_initial_install_review.sql')
+          if not install_path.is_file():
+              raise SystemExit('Missing combined install review candidate')
+          install_sql = install_path.read_text(encoding='utf-8').lower()
+          if 'new, empty supabase project only' not in install_sql:
+              raise SystemExit('Combined install candidate must warn against existing databases')
+          if install_sql.count('$') % 2:
+              raise SystemExit('Unbalanced dollar-quoted blocks in combined install candidate')
+          if 'returns trigger language plpgsql as $\\nbegin' in install_sql:
+              raise SystemExit('Malformed PL/pgSQL dollar quote in combined install candidate')
+          for table in ('public.customers', 'public.incassi_invoices', 'public.incassi_payments'):
+              if table not in install_sql:
+                  raise SystemExit('Combined install candidate missing dependency: ' + table)
+          print('Incassi safeguards and SQL delimiter checks: OK (static only; no SQL execution or security test)')
           PY
