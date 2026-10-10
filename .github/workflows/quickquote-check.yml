@@ -111,6 +111,11 @@ jobs:
               'create trigger incassi_payments_guard_verification',
               'create trigger incassi_reminders_guard_approval',
               'create trigger incassi_plans_guard_acceptance',
+              'create trigger incassi_installments_guard_payment',
+              'create trigger incassi_invoices_guard_accounting_fields',
+              'create or replace function public.incassi_guard_invoice_accounting_fields()',
+              'new.status is distinct from old.status',
+              'new.original_amount_cents is distinct from old.original_amount_cents',
               "new.verification_status <> 'pending'",
               "new.status <> 'draft'",
           ]
