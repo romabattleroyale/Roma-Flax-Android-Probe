@@ -1,0 +1,19 @@
+{
+  "name": "QuickQuote — Preventivi",
+  "short_name": "QuickQuote",
+  "description": "Anteprima locale per organizzare clienti e preventivi.",
+  "lang": "it-IT",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fc",
+  "theme_color": "#071a39",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
