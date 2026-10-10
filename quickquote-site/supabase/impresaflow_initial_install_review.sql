@@ -41,7 +41,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists profiles_guard_plan on public.profiles;
 create trigger profiles_guard_plan before insert or update on public.profiles
