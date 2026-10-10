@@ -46,7 +46,8 @@ function cell(text){const td=document.createElement('td');td.textContent=text??'
 async function load(){
  if(!db){note('Spazio online non ancora attivo: occorre configurare il progetto Supabase dedicato.');return}
  const {data:{session},error:sessionError}=await db.auth.getSession();
- if(sessionError||!session){note('Per visualizzare i tuoi dati devi prima accedere.','error');return}
+ if(sessionError||!session){activeUserId=null;note('Per visualizzare i tuoi dati devi prima accedere.','error');return}
+ activeUserId=session.user.id;
  $('signout').classList.remove('hidden');
  const [q,c]=await Promise.all([
   db.from('quotes').select('id,quote_number,title,issue_date,status,total').order('issue_date',{ascending:false}).limit(10),
@@ -66,7 +67,7 @@ async function load(){
  note('Sessione verificata. Dati caricati dal database online.','ok');
 }
 $('signout').addEventListener('click',async()=>{if(!db)return;const {error}=await db.auth.signOut();if(error){note('Non è stato possibile uscire. Riprova.','error');return}location.href='./auth.html'});
-async function addQuote(event){event.preventDefault();if(!db||!activeUserId||busy)return;const button=$('quoteSave');button.disabled=true;busy=true;try{const quote_number=$('quoteNumber').value.trim();const title=$('quoteTitle').value.trim();const total=Number($('quoteTotalInput').value);if(!quote_number||!title||!Number.isFinite(total)||total<0)throw new Error('Controlla numero, descrizione e totale.');const payload={user_id:activeUserId,quote_number,title,total,subtotal:total,tax_total:0,status:'draft',issue_date:new Date().toISOString().slice(0,10)};const {error}=await db.from('quotes').insert(payload);if(error)throw error;$('quoteForm').reset();note('Preventivo salvato online.','ok');await load()}catch(error){note(error.message||'Impossibile salvare il preventivo. Verifica lo schema Supabase.','error')}finally{button.disabled=false;busy=false}}\n$('customerForm').addEventListener('submit',addCustomer);$('quoteForm').addEventListener('submit',addQuote);\nif(db)db.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_IN'&&session)load()});
+async function addQuote(event){event.preventDefault();if(!db||!activeUserId||busy)return;const button=$('quoteSave');button.disabled=true;busy=true;try{const quote_number=$('quoteNumber').value.trim();const title=$('quoteTitle').value.trim();const total=Number($('quoteTotalInput').value);if(!quote_number||!title||!Number.isFinite(total)||total<0)throw new Error('Controlla numero, descrizione e totale.');const payload={user_id:activeUserId,quote_number,title,total,status:'draft',issue_date:new Date().toISOString().slice(0,10)};const {error}=await db.from('quotes').insert(payload);if(error)throw error;$('quoteForm').reset();note('Preventivo salvato online.','ok');await load()}catch(error){note(error.message||'Impossibile salvare il preventivo. Verifica lo schema Supabase.','error')}finally{button.disabled=false;busy=false}}\n$('customerForm').addEventListener('submit',addCustomer);$('quoteForm').addEventListener('submit',addQuote);\nif(db)db.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_IN'&&session)load()});
 load().catch(()=>note('Errore di connessione. Riprova più tardi.','error'));
 </script>
 </body>
