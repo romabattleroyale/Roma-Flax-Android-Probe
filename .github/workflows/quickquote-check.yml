@@ -1,0 +1,57 @@
+name: QuickQuote static checks
+
+on:
+  push:
+    branches: [quickquote-web-v1]
+    paths:
+      - 'quickquote-site/**'
+      - '.github/workflows/quickquote-check.yml'
+  pull_request:
+    branches: [quickquote-web-v1]
+    paths:
+      - 'quickquote-site/**'
+      - '.github/workflows/quickquote-check.yml'
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check manifest JSON and required files
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('quickquote-site')
+          required = [
+              'index.html', 'app.html', 'auth.html', 'workspace.html',
+              'manifest.webmanifest', 'icon.svg', 'sw.js',
+          ]
+          missing = [name for name in required if not (root / name).is_file()]
+          if missing:
+              raise SystemExit('Missing files: ' + ', '.join(missing))
+          manifest = json.loads((root / 'manifest.webmanifest').read_text(encoding='utf-8'))
+          for key in ('name', 'short_name', 'start_url', 'display', 'icons'):
+              if key not in manifest:
+                  raise SystemExit('Manifest missing key: ' + key)
+          print('Required files and manifest JSON: OK')
+          PY
+      - name: Check local links referenced by main pages
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          root = Path('quickquote-site')
+          pages = ['index.html', 'app.html', 'auth.html', 'workspace.html']
+          errors = []
+          for page in pages:
+              text = (root / page).read_text(encoding='utf-8')
+              for target in re.findall(r'''(?:href|src)=[\"'](\./[^#\"']+)[\"']''', text):
+                  path = target.split('?', 1)[0]
+                  if path.startswith('./') and not (root / path[2:]).exists():
+                      errors.append(f'{page}: missing local target {target}')
+          if errors:
+              raise SystemExit('\n'.join(errors))
+          print('Local relative links: OK')
+          PY
