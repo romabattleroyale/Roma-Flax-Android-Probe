@@ -29,7 +29,7 @@ create table if not exists public.profiles (
 -- A browser-authenticated user must never be able to grant themselves Pro.
 -- Trusted server-side billing code may change plan when auth.uid() is null.
 create or replace function public.guard_profile_plan()
-returns trigger language plpgsql as $
+returns trigger language plpgsql as $$
 begin
   if (auth.uid() is not null) then
     if (tg_op = 'INSERT' and new.plan <> 'free') then
