@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Accesso QuickQuote</title>
+<style>
+:root{color-scheme:dark;--bg:#101827;--panel:#182338;--line:#2a3952;--text:#f4f7fb;--muted:#a8b4c7;--accent:#8b9cff;--good:#9be2bd;--bad:#ffb5b5}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#243553 0%,var(--bg) 60%);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;display:grid;place-items:center;padding:24px}
+main{width:min(100%,440px)}.brand{font-size:1.4rem;font-weight:800;letter-spacing:-.04em;margin-bottom:22px}.brand span{color:var(--accent)}.card{background:rgba(24,35,56,.96);border:1px solid var(--line);border-radius:22px;padding:clamp(22px,6vw,34px);box-shadow:0 22px 80px #0004}h1{font-size:1.8rem;line-height:1.15;margin:0 0 8px;letter-spacing:-.04em}.intro{color:var(--muted);margin:0 0 24px}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#111a2a;padding:5px;border-radius:12px;margin-bottom:22px}.tabs button{background:transparent;border:0;color:var(--muted);padding:10px;border-radius:9px;cursor:pointer;font:inherit}.tabs button[aria-selected=true]{background:#2b3b58;color:var(--text)}label{display:block;font-size:.9rem;font-weight:650;margin:14px 0 6px}input{width:100%;padding:13px 14px;background:#101827;border:1px solid #34445e;border-radius:10px;color:var(--text);font:inherit}input:focus{outline:2px solid var(--accent);outline-offset:1px}.primary{width:100%;margin-top:20px;padding:13px 16px;border:0;border-radius:11px;background:var(--accent);color:#111827;font:inherit;font-weight:800;cursor:pointer}.primary:disabled{opacity:.55;cursor:wait}.minor{width:100%;margin-top:10px;background:none;border:0;color:#c5ceff;text-decoration:underline;cursor:pointer;padding:8px;font:inherit}.status{display:none;margin-top:16px;padding:12px;border:1px solid var(--line);border-radius:10px;overflow-wrap:anywhere}.status[data-kind=ok]{display:block;color:var(--good)}.status[data-kind=error]{display:block;color:var(--bad)}.hint{font-size:.83rem;color:var(--muted);margin-top:18px}.back{display:block;text-align:center;color:var(--muted);margin-top:20px;text-decoration:none}.hidden{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<div class="brand">Quick<span>Quote</span></div>
+<section class="card">
+<h1 id="heading">Bentornato</h1>
+<p class="intro" id="intro">Accedi al tuo spazio preventivi.</p>
+<div class="tabs" role="tablist" aria-label="Tipo di accesso">
+<button type="button" id="tabLogin" aria-selected="true">Accedi</button>
+<button type="button" id="tabSignup" aria-selected="false">Crea account</button>
+</div>
+<form id="authForm">
+<div id="nameWrap" class="hidden"><label for="name">Nome o attività</label><input id="name" autocomplete="organization" maxlength="100" placeholder="La tua attività"></div>
+<label for="email">Email</label><input id="email" type="email" required autocomplete="email" maxlength="254" placeholder="nome@esempio.it">
+<label for="password">Password</label><input id="password" type="password" required autocomplete="current-password" minlength="8" maxlength="128" placeholder="Almeno 8 caratteri">
+<button class="primary" id="submit" type="submit">Accedi</button>
+</form>
+<button class="minor" id="reset" type="button">Ho dimenticato la password</button>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+<p class="hint">La registrazione e l'accesso si attiveranno quando il progetto Supabase sarà configurato. Non inserire dati reali finché il sito non è stato pubblicato e verificato.</p>
+</section>
+<a class="back" href="./index.html">← Torna al sito QuickQuote</a>
+</main>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// Public browser configuration only. Replace these placeholders with values from
+// the dedicated QuickQuote Supabase project. Never use a service_role key here.
+const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY';
+const configured = /^https:\/\/[^/]+\.supabase\.co$/.test(SUPABASE_URL)
+  && !SUPABASE_URL.includes('YOUR-PROJECT')
+  && SUPABASE_ANON_KEY.length > 20
+  && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE');
+const client = configured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const $ = id => document.getElementById(id);
+let mode = 'login';
+function message(text, kind='ok') { const el=$('status'); el.textContent=text; el.dataset.kind=kind; }
+function setMode(next) {
+  mode=next;
+  $('tabLogin').setAttribute('aria-selected',String(mode==='login'));
+  $('tabSignup').setAttribute('aria-selected',String(mode==='signup'));
+  $('nameWrap').classList.toggle('hidden',mode!=='signup');
+  $('heading').textContent=mode==='login'?'Bentornato':'Crea il tuo account';
+  $('intro').textContent=mode==='login'?'Accedi al tuo spazio preventivi.':'Registrati per preparare il tuo spazio QuickQuote.';
+  $('submit').textContent=mode==='login'?'Accedi':'Crea account';
+  $('reset').classList.toggle('hidden',mode!=='login');
+  $('password').autocomplete=mode==='login'?'current-password':'new-password';
+  $('status').textContent=''; $('status').removeAttribute('data-kind');
+}
+$('tabLogin').addEventListener('click',()=>setMode('login'));
+$('tabSignup').addEventListener('click',()=>setMode('signup'));
+$('authForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(!client){message('Accesso non ancora attivo: manca la configurazione del progetto Supabase.', 'error');return}
+  const button=$('submit'); button.disabled=true;
+  try {
+    const email=$('email').value.trim();
+    const password=$('password').value;
+    if(mode==='signup') {
+      const name=$('name').value.trim();
+      const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name}}});
+      if(error) throw error;
+      message(data.session?'Account creato. La base del profilo è pronta.':'Controlla la tua email per confermare la registrazione.');
+    } else {
+      const {data,error}=await client.auth.signInWithPassword({email,password});
+      if(error) throw error;
+      message('Accesso riuscito. La pagina dei preventivi sarà collegata dopo l'integrazione del database.');
+    }
+  } catch(error) { message(error.message||'Operazione non riuscita. Riprova.', 'error'); }
+  finally {button.disabled=false}
+});
+$('reset').addEventListener('click',async()=>{
+  if(!client){message('Recupero password non ancora attivo: manca la configurazione Supabase.','error');return}
+  const email=$('email').value.trim();
+  if(!email){message('Inserisci prima la tua email.','error');return}
+  try { const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname}); if(error) throw error; message('Se l’indirizzo è registrato, riceverai le istruzioni per reimpostare la password.');}
+  catch(error){message(error.message||'Impossibile inviare la richiesta.','error')}
+});
+setMode('login');
+</script>
+</body>
+</html>
