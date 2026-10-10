@@ -55,4 +55,7 @@ $('#exportData').onclick=()=>{const data={format:'quickquote-local-backup-v1',ex
 $('#importDataBtn').onclick=()=>$('#importDataFile').click();
 $('#importDataFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.format!=='quickquote-local-backup-v1'||!Array.isArray(data.quotes)||!Array.isArray(data.customers))throw new Error('Formato non valido');if(!confirm('Importare il backup? I dati attuali nel browser saranno sostituiti.'))return;quotes=data.quotes;customers=data.customers;write();render();toast('Backup importato in questo browser')}catch(err){toast('Backup non valido o illeggibile')}finally{e.target.value=''}});
 render();showPage('dashboard');
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
 </script></body></html>
