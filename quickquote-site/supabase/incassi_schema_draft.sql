@@ -360,14 +360,14 @@ before insert or update on public.incassi_reminders
 for each row execute function public.incassi_guard_reminder_approval();
 
 create or replace function public.incassi_guard_plan_acceptance()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql as $
 begin
   if auth.uid() is not null then
     if tg_op = 'INSERT' and new.status not in ('draft','proposed') then
       raise exception 'Payment plans must start as drafts or proposals';
     end if;
     if tg_op = 'UPDATE' and (
-      new.status is distinct from old.status
+      (new.status = 'accepted' and old.status is distinct from 'accepted')
       or new.accepted_at is distinct from old.accepted_at
       or new.acceptance_note is distinct from old.acceptance_note
     ) then
@@ -376,7 +376,7 @@ begin
   end if;
   return new;
 end;
-$$;
+$;
 
 drop trigger if exists incassi_plans_guard_acceptance on public.incassi_payment_plans;
 create trigger incassi_plans_guard_acceptance
