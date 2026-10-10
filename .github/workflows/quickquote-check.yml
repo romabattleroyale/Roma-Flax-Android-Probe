@@ -55,3 +55,20 @@ jobs:
               raise SystemExit('\n'.join(errors))
           print('Local relative links: OK')
           PY
+      - name: Check PWA wiring and avoid accidental cross-app cache deletion
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          app = Path('quickquote-site/app.html').read_text(encoding='utf-8')
+          worker = Path('quickquote-site/sw.js').read_text(encoding='utf-8')
+          errors = []
+          if 'rel="manifest"' not in app or './manifest.webmanifest' not in app:
+              errors.append('app.html does not link the web app manifest')
+          if "serviceWorker.register('./sw.js')" not in app:
+              errors.append('app.html does not register the service worker')
+          if "key.startsWith('quickquote-static-')" not in worker:
+              errors.append('service worker cleanup is not restricted to QuickQuote caches')
+          if errors:
+              raise SystemExit('\n'.join(errors))
+          print('PWA wiring and cache isolation: OK')
+          PY
