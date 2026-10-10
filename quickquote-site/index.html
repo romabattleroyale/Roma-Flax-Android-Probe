@@ -16,7 +16,7 @@
 <body>
 <header class="container topbar">
 <a class="brand" href="#" aria-label="QuickQuote home"><span class="brandmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 3h7l5 5v13H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Z"/><path d="M14 3v6h5M8 13h8M8 17h6"/></svg></span>QuickQuote</a>
-<nav class="nav" id="nav"><a href="#home">Home</a><a href="#funzionalita">Funzionalità</a><a href="#come-funziona">Come funziona</a><a href="#prezzi">Prezzi</a><a href="#faq">FAQ</a></nav>
+<nav class="nav" id="nav"><a href="#home">Home</a><a href="./app.html">Prova la demo</a><a href="#funzionalita">Funzionalità</a><a href="#come-funziona">Come funziona</a><a href="#prezzi">Prezzi</a><a href="#faq">FAQ</a></nav>
 <div class="navactions"><button class="btn btn-outline" data-modal="login">Accedi</button><button class="btn btn-primary" data-modal="signup">Inizia gratis</button><button class="menu-toggle" id="menuToggle" aria-label="Apri menu">☰</button></div>
 </header>
 <main>
@@ -56,7 +56,7 @@ legal:{title:'Informazioni legali',desc:'Prima della pubblicazione saranno aggiu
 };
 function showModal(key){const f=forms[key]||forms.signup;content.innerHTML='<h2 id="modalTitle">'+f.title+'</h2><p>'+f.desc+'</p>'+(f.fields||[]).map((field,i)=>'<label for="modalField'+i+'">'+field[0]+'</label><input id="modalField'+i+'" type="'+field[1]+'" placeholder="'+field[0]+'" autocomplete="off">').join('')+'<button class="btn btn-primary" id="modalSubmit">'+f.submit+'</button><div class="notice">Anteprima di sviluppo: nessun dato viene inviato o salvato.</div>';backdrop.classList.add('open');document.getElementById('modalSubmit').onclick=()=>{backdrop.classList.remove('open');showToast('Anteprima grafica: questa funzione sarà collegata prima del rilascio.');};}
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3200)}
-document.querySelectorAll('[data-modal]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();showModal(el.dataset.modal)}));
+document.querySelectorAll('[data-modal]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();const key=el.dataset.modal;if(key==='login'||key==='signup'){location.href='./auth.html'+(key==='signup'?'?mode=signup':'');return}showModal(key)}));
 document.getElementById('modalClose').addEventListener('click',()=>backdrop.classList.remove('open'));
 backdrop.addEventListener('click',e=>{if(e.target===backdrop)backdrop.classList.remove('open')});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')backdrop.classList.remove('open')});
