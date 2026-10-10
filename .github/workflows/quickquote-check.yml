@@ -91,3 +91,31 @@ jobs:
               raise SystemExit('Missing schema safeguards: ' + '; '.join(missing))
           print('Schema safeguards present: OK')
           PY
+      - name: Check Incassi draft has essential safeguards
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          sql_path = Path('quickquote-site/supabase/incassi_schema_draft.sql')
+          checklist = Path('docs/IMPRESAFLOW_INCASSI_TEST_CHECKLIST.md')
+          workflows = Path('docs/IMPRESAFLOW_SERVER_WORKFLOWS.md')
+          if not sql_path.is_file() or not checklist.is_file() or not workflows.is_file():
+              raise SystemExit('Missing Incassi draft or supporting security docs')
+          sql = sql_path.read_text(encoding='utf-8').lower()
+          required = [
+              'alter table public.incassi_invoices enable row level security',
+              'alter table public.incassi_payments enable row level security',
+              'alter table public.incassi_reminders enable row level security',
+              'alter table public.incassi_payment_plans enable row level security',
+              'alter table public.incassi_installments enable row level security',
+              'alter table public.incassi_activity_events enable row level security',
+              'create trigger incassi_payments_guard_verification',
+              'create trigger incassi_reminders_guard_approval',
+              'create trigger incassi_plans_guard_acceptance',
+              "new.verification_status <> 'pending'",
+              "new.status <> 'draft'",
+          ]
+          missing = [item for item in required if item not in sql]
+          if missing:
+              raise SystemExit('Missing Incassi safeguards: ' + '; '.join(missing))
+          print('Incassi safeguard text checks: OK (not a SQL execution or security test)')
+          PY
