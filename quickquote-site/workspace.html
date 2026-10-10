@@ -30,7 +30,7 @@
 <button type="submit" id="customerSave">Aggiungi cliente</button>
 </form><h3>Nuovo preventivo</h3><form id="quoteForm" class="customer-form"><label>Numero preventivo<input id="quoteNumber" required maxlength="60" placeholder="PREV-2026-001"></label><label>Descrizione<input id="quoteTitle" required maxlength="180" placeholder="Descrizione lavoro"></label><label>Totale (€)<input id="quoteTotalInput" required type="number" min="0" max="99999999" step="0.01" placeholder="0,00"></label><button id="quoteSave" type="submit">Crea preventivo</button></form><div class="tablewrap"><table><thead><tr><th>Cliente</th><th>Email</th><th>Telefono</th></tr></thead><tbody id="customersRows"></tbody></table></div><p id="customerEmpty" class="empty hidden">Non ci sono ancora clienti salvati online.</p></section>
 </div>
-<footer class="footer">Area in sviluppo. I dati online saranno disponibili dopo la configurazione di Supabase e il collegamento completo dei moduli.</footer>
+<footer class="footer">Versione in integrazione: accesso e inserimento dati richiedono che le tabelle e le policy RLS siano installate nel progetto Supabase corretto.</footer>
 </div>
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
