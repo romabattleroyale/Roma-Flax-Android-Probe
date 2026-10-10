@@ -18,6 +18,27 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 
+-- A browser-authenticated user must never be able to grant themselves Pro.
+-- Trusted server-side billing code may change plan when auth.uid() is null.
+create or replace function public.guard_profile_plan()
+returns trigger language plpgsql as $
+begin
+  if (auth.uid() is not null) then
+    if (tg_op = 'INSERT' and new.plan <> 'free') then
+      raise exception 'Plan can only be assigned by trusted billing code';
+    end if;
+    if (tg_op = 'UPDATE' and new.plan is distinct from old.plan) then
+      raise exception 'Plan can only be changed by trusted billing code';
+    end if;
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists profiles_guard_plan on public.profiles;
+create trigger profiles_guard_plan before insert or update on public.profiles
+for each row execute function public.guard_profile_plan();
+
 create table if not exists public.customers (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
