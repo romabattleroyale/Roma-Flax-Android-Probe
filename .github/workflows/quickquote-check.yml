@@ -72,3 +72,22 @@ jobs:
               raise SystemExit('\n'.join(errors))
           print('PWA wiring and cache isolation: OK')
           PY
+      - name: Check database plan protection and row-level security
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          sql = Path('quickquote-site/supabase/schema.sql').read_text(encoding='utf-8').lower()
+          required = [
+              'create or replace function public.guard_profile_plan()',
+              'create trigger profiles_guard_plan before insert or update on public.profiles',
+              "new.plan is distinct from old.plan",
+              'alter table public.profiles enable row level security',
+              'alter table public.customers enable row level security',
+              'alter table public.quotes enable row level security',
+              'alter table public.quote_items enable row level security',
+          ]
+          missing = [item for item in required if item not in sql]
+          if missing:
+              raise SystemExit('Missing schema safeguards: ' + '; '.join(missing))
+          print('Schema safeguards present: OK')
+          PY
