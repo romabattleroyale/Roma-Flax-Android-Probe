@@ -1,11 +1,25 @@
-# Roma Flax Android Probe
+# QuickQuote
 
-This repository is a separate test area. The Godot project in `Roma-BRT` is not modified.
+QuickQuote is a web app for creating and managing estimates/quotes, originally developed in Lovable and being migrated to independent hosting.
 
-## Run the toolchain check
-1. Open **Actions**.
-2. Choose **Flax Android toolchain probe**.
-3. Press **Run workflow** on branch `main`.
-4. Open the run and inspect the logs.
+## Migration status
 
-This workflow checks provisioning of Java, .NET and Android SDK/NDK. It does not compile Flax and does not produce an APK. A successful run is only the first feasibility check.
+This branch is an in-progress migration, not a production-ready release. Build and tests have not yet been run successfully in an independent environment. Payment integration, environment configuration, public assets, SEO URLs, and deployment still require verification.
+
+## Environment variables
+
+Use `.env.example` as a checklist. Copy it to `.env` locally and enter values from the correct Supabase and Stripe projects. Never commit `.env` or expose Stripe secret keys in browser variables.
+
+## Development
+
+Install dependencies using the package manager selected for this project, then run:
+
+- `npm run dev` to start Vite
+- `npm run build` to test a production build
+- `npm test` to run Vitest
+
+The dependency lockfile and clean installation workflow still need to be established as part of the migration.
+
+## Branding
+
+QuickQuote — by ReplyToolsLab.
