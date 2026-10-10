@@ -295,3 +295,82 @@ for select to authenticated using (user_id = (select auth.uid()));
 -- 4. Review delete permissions, retention, exports, and soft-delete strategy.
 -- 5. Test all RLS policies with two independent authenticated accounts.
 -- 6. Do not run this draft on a live database without a reviewed migration and backup.
+
+
+-- Browser-side users must not self-certify payment verification or approval.
+-- auth.uid() is present for normal authenticated client requests. Trusted backend
+-- operations must use a carefully protected server-side path and audit every action.
+create or replace function public.incassi_guard_payment_verification()
+returns trigger language plpgsql as $$
+begin
+  if auth.uid() is not null then
+    if tg_op = 'INSERT' and new.verification_status <> 'pending' then
+      raise exception 'Payments must start as pending verification';
+    end if;
+    if tg_op = 'UPDATE'
+      and (new.verification_status is distinct from old.verification_status
+        or new.verified_at is distinct from old.verified_at) then
+      raise exception 'Payment verification requires a trusted server-side workflow';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists incassi_payments_guard_verification on public.incassi_payments;
+create trigger incassi_payments_guard_verification
+before insert or update on public.incassi_payments
+for each row execute function public.incassi_guard_payment_verification();
+
+create or replace function public.incassi_guard_reminder_approval()
+returns trigger language plpgsql as $$
+begin
+  if auth.uid() is not null then
+    if tg_op = 'INSERT' and new.status <> 'draft' then
+      raise exception 'Reminders must start as drafts';
+    end if;
+    if tg_op = 'UPDATE' and (
+      new.status is distinct from old.status
+      or new.approved_by is distinct from old.approved_by
+      or new.approved_at is distinct from old.approved_at
+      or new.sent_at is distinct from old.sent_at
+      or new.delivery_reference is distinct from old.delivery_reference
+    ) then
+      raise exception 'Reminder approval and sending require a trusted server-side workflow';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists incassi_reminders_guard_approval on public.incassi_reminders;
+create trigger incassi_reminders_guard_approval
+before insert or update on public.incassi_reminders
+for each row execute function public.incassi_guard_reminder_approval();
+
+create or replace function public.incassi_guard_plan_acceptance()
+returns trigger language plpgsql as $$
+begin
+  if auth.uid() is not null then
+    if tg_op = 'INSERT' and new.status not in ('draft','proposed') then
+      raise exception 'Payment plans must start as drafts or proposals';
+    end if;
+    if tg_op = 'UPDATE' and (
+      new.status is distinct from old.status
+      or new.accepted_at is distinct from old.accepted_at
+      or new.acceptance_note is distinct from old.acceptance_note
+    ) then
+      raise exception 'Plan acceptance requires a trusted server-side workflow';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists incassi_plans_guard_acceptance on public.incassi_payment_plans;
+create trigger incassi_plans_guard_acceptance
+before insert or update on public.incassi_payment_plans
+for each row execute function public.incassi_guard_plan_acceptance();
+
+-- Client-provided activity history is not authoritative; event inserts are reserved
+-- for a trusted backend function with validated ownership and sanitized metadata.
