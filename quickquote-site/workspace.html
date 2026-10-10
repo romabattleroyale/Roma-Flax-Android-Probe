@@ -29,8 +29,8 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 // Use only a publishable/anon key protected by RLS. Never expose service_role.
-const SUPABASE_URL='https://YOUR-PROJECT.supabase.co';
-const SUPABASE_ANON_KEY='YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY';
+const SUPABASE_URL='https://eywhhtovgoureaqoajpp.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_XelcrTlrlNW4s5kb5exgvQ_Q7HyxuI3';
 const configured=/^https:\/\/[^/]+\.supabase\.co$/.test(SUPABASE_URL)&&!SUPABASE_URL.includes('YOUR-PROJECT')&&SUPABASE_ANON_KEY.length>20&&!SUPABASE_ANON_KEY.includes('YOUR_SUPABASE');
 const db=configured?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 const $=id=>document.getElementById(id);
