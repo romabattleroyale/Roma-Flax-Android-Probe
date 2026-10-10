@@ -7,7 +7,7 @@
 <title>Il mio spazio — QuickQuote</title>
 <style>
 :root{color-scheme:dark;--bg:#101827;--panel:#182338;--line:#2a3952;--text:#f4f7fb;--muted:#a8b4c7;--accent:#8b9cff;--green:#9be2bd;--red:#ffb5b5}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}.shell{max-width:1100px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px}.brand{font-size:1.35rem;font-weight:850;letter-spacing:-.04em}.brand span{color:var(--accent)}button,a.button{display:inline-block;border:1px solid var(--line);border-radius:10px;background:#202d45;color:var(--text);padding:10px 14px;font:inherit;text-decoration:none;cursor:pointer}.hero{padding:28px 0 18px}.hero h1{font-size:clamp(1.7rem,5vw,2.5rem);letter-spacing:-.045em;margin:0}.muted{color:var(--muted)}.notice{padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:12px;margin:18px 0}.notice[data-kind=ok]{color:var(--green)}.notice[data-kind=error]{color:var(--red)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.tile,.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px;min-width:0}.tile small{color:var(--muted)}.number{font-size:2rem;font-weight:800;display:block;margin-top:4px}.panel h2{font-size:1.1rem;margin:0 0 12px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:500px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:.85rem;font-weight:600}.empty{color:var(--muted);padding:16px 0}.hidden{display:none!important}.footer{color:var(--muted);font-size:.85rem;padding:24px 0}@media(max-width:650px){.grid{grid-template-columns:1fr}.shell{padding:16px}.tile{padding:14px}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}.shell{max-width:1100px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px}.brand{font-size:1.35rem;font-weight:850;letter-spacing:-.04em}.brand span{color:var(--accent)}button,a.button{display:inline-block;border:1px solid var(--line);border-radius:10px;background:#202d45;color:var(--text);padding:10px 14px;font:inherit;text-decoration:none;cursor:pointer}.hero{padding:28px 0 18px}.hero h1{font-size:clamp(1.7rem,5vw,2.5rem);letter-spacing:-.045em;margin:0}.muted{color:var(--muted)}.notice{padding:14px 16px;border:1px solid var(--line);background:var(--panel);border-radius:12px;margin:18px 0}.notice[data-kind=ok]{color:var(--green)}.notice[data-kind=error]{color:var(--red)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.tile,.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px;min-width:0}.tile small{color:var(--muted)}.number{font-size:2rem;font-weight:800;display:block;margin-top:4px}.panel h2{font-size:1.1rem;margin:0 0 12px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:500px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:.85rem;font-weight:600}.empty{color:var(--muted);padding:16px 0}.customer-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;align-items:end;margin:14px 0 18px}.customer-form label{display:grid;gap:6px;color:var(--muted);font-size:.88rem}.customer-form input{width:100%;min-width:0;padding:10px;border-radius:9px;border:1px solid var(--line);background:#101827;color:var(--text);font:inherit}@media(max-width:750px){.customer-form{grid-template-columns:1fr}}.hidden{display:none!important}.footer{color:var(--muted);font-size:.85rem;padding:24px 0}@media(max-width:650px){.grid{grid-template-columns:1fr}.shell{padding:16px}.tile{padding:14px}}
 </style>
 </head>
 <body>
@@ -22,25 +22,32 @@
 <div class="tile"><small>Valore degli ultimi 10</small><span class="number" id="quoteTotal">—</span></div>
 </div>
 <section class="panel"><h2>Ultimi preventivi</h2><div class="tablewrap"><table><thead><tr><th>Numero</th><th>Descrizione</th><th>Data</th><th>Stato</th><th>Totale</th></tr></thead><tbody id="quotesRows"></tbody></table></div><p id="quoteEmpty" class="empty hidden">Non ci sono ancora preventivi salvati online.</p></section>
-<section class="panel" style="margin-top:16px"><h2>Rubrica clienti</h2><div class="tablewrap"><table><thead><tr><th>Cliente</th><th>Email</th><th>Telefono</th></tr></thead><tbody id="customersRows"></tbody></table></div><p id="customerEmpty" class="empty hidden">Non ci sono ancora clienti salvati online.</p></section>
+<section class="panel" style="margin-top:16px"><h2>Rubrica clienti</h2>
+<form id="customerForm" class="customer-form">
+<label>Nuovo cliente <input id="customerName" maxlength="160" required placeholder="Nome cliente o azienda"></label>
+<label>Email <input id="customerEmail" type="email" maxlength="254" placeholder="email@esempio.it"></label>
+<label>Telefono <input id="customerPhone" maxlength="60" placeholder="+39…"></label>
+<button type="submit" id="customerSave">Aggiungi cliente</button>
+</form><h3>Nuovo preventivo</h3><form id="quoteForm" class="customer-form"><label>Numero preventivo<input id="quoteNumber" required maxlength="60" placeholder="PREV-2026-001"></label><label>Descrizione<input id="quoteTitle" required maxlength="180" placeholder="Descrizione lavoro"></label><label>Totale (€)<input id="quoteTotalInput" required type="number" min="0" max="99999999" step="0.01" placeholder="0,00"></label><button id="quoteSave" type="submit">Crea preventivo</button></form><div class="tablewrap"><table><thead><tr><th>Cliente</th><th>Email</th><th>Telefono</th></tr></thead><tbody id="customersRows"></tbody></table></div><p id="customerEmpty" class="empty hidden">Non ci sono ancora clienti salvati online.</p></section>
 </div>
-<footer class="footer">Area in sviluppo. I dati online saranno disponibili dopo la configurazione di Supabase e il collegamento completo dei moduli.</footer>
+<footer class="footer">Versione in integrazione: accesso e inserimento dati richiedono che le tabelle e le policy RLS siano installate nel progetto Supabase corretto.</footer>
 </div>
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 // Use only a publishable/anon key protected by RLS. Never expose service_role.
-const SUPABASE_URL='https://YOUR-PROJECT.supabase.co';
-const SUPABASE_ANON_KEY='YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY';
+const SUPABASE_URL='https://eywhhtovgoureaqoajpp.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_XelcrTlrlNW4s5kb5exgvQ_Q7HyxuI3';
 const configured=/^https:\/\/[^/]+\.supabase\.co$/.test(SUPABASE_URL)&&!SUPABASE_URL.includes('YOUR-PROJECT')&&SUPABASE_ANON_KEY.length>20&&!SUPABASE_ANON_KEY.includes('YOUR_SUPABASE');
 const db=configured?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 const $=id=>document.getElementById(id);
 function note(text,kind=''){ $('notice').textContent=text; if(kind)$('notice').dataset.kind=kind;else $('notice').removeAttribute('data-kind'); }
 function euro(n){return new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(n)||0)}
-function cell(text){const td=document.createElement('td');td.textContent=text??'';return td}
+function cell(text){const td=document.createElement('td');td.textContent=text??'';return td}\nlet activeUserId=null;\nlet busy=false;\nasync function addCustomer(event){event.preventDefault();if(!db||!activeUserId||busy)return;busy=true;const button=$('customerSave');button.disabled=true;try{const name=$('customerName').value.trim();if(!name)throw new Error('Inserisci il nome del cliente.');const payload={user_id:activeUserId,name,email:$('customerEmail').value.trim()||null,phone:$('customerPhone').value.trim()||null};const {error}=await db.from('customers').insert(payload);if(error)throw error;$('customerForm').reset();note('Cliente salvato online.','ok');await load()}catch(error){note(error.message||'Impossibile salvare il cliente. Verifica tabelle e policy Supabase.','error')}finally{button.disabled=false;busy=false}}
 async function load(){
  if(!db){note('Spazio online non ancora attivo: occorre configurare il progetto Supabase dedicato.');return}
  const {data:{session},error:sessionError}=await db.auth.getSession();
- if(sessionError||!session){note('Per visualizzare i tuoi dati devi prima accedere.','error');return}
+ if(sessionError||!session){activeUserId=null;note('Per visualizzare i tuoi dati devi prima accedere.','error');return}
+ activeUserId=session.user.id;
  $('signout').classList.remove('hidden');
  const [q,c]=await Promise.all([
   db.from('quotes').select('id,quote_number,title,issue_date,status,total').order('issue_date',{ascending:false}).limit(10),
@@ -60,7 +67,7 @@ async function load(){
  note('Sessione verificata. Dati caricati dal database online.','ok');
 }
 $('signout').addEventListener('click',async()=>{if(!db)return;const {error}=await db.auth.signOut();if(error){note('Non è stato possibile uscire. Riprova.','error');return}location.href='./auth.html'});
-if(db)db.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_IN'&&session)load()});
+async function addQuote(event){event.preventDefault();if(!db||!activeUserId||busy)return;const button=$('quoteSave');button.disabled=true;busy=true;try{const quote_number=$('quoteNumber').value.trim();const title=$('quoteTitle').value.trim();const total=Number($('quoteTotalInput').value);if(!quote_number||!title||!Number.isFinite(total)||total<0)throw new Error('Controlla numero, descrizione e totale.');const payload={user_id:activeUserId,quote_number,title,total,status:'draft',issue_date:new Date().toISOString().slice(0,10)};const {error}=await db.from('quotes').insert(payload);if(error)throw error;$('quoteForm').reset();note('Preventivo salvato online.','ok');await load()}catch(error){note(error.message||'Impossibile salvare il preventivo. Verifica lo schema Supabase.','error')}finally{button.disabled=false;busy=false}}\n$('customerForm').addEventListener('submit',addCustomer);$('quoteForm').addEventListener('submit',addQuote);\nif(db)db.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_IN'&&session)load()});
 load().catch(()=>note('Errore di connessione. Riprova più tardi.','error'));
 </script>
 </body>

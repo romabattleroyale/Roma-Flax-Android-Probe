@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102b35">
+<title>ImpresaFlow Incassi — prototipo</title>
+<style>
+:root{--ink:#122d36;--muted:#647780;--line:#dce6e8;--bg:#f3f7f7;--teal:#0f766e;--teal2:#d9f3ee;--amber:#fff0d2;--red:#fde7e7;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:#102b35;color:white;padding:18px max(18px,calc((100vw - 1180px)/2));display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:-.4px;font-size:20px}.brand span{color:#7ee0c7}.subbrand{font-size:12px;color:#c4d6d9;margin-top:2px}
+.demo{font-size:12px;border:1px solid #658087;border-radius:99px;padding:6px 10px;color:#e3f7f2}
+main{max-width:1180px;margin:26px auto;padding:0 18px 50px}.intro{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap;margin-bottom:22px}
+h1{font-size:clamp(25px,4vw,34px);letter-spacing:-1px;margin:0 0 5px}p{margin:0;color:var(--muted)}.note{background:#fff7df;border:1px solid #f1dba4;border-radius:12px;padding:12px 14px;margin-bottom:18px;color:#624b1d;font-size:13px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:22px}.metric,.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 3px 12px #17394308}.metric .label{font-size:12px;color:var(--muted);font-weight:650}.metric .value{font-size:clamp(22px,3vw,29px);font-weight:800;letter-spacing:-.7px;margin-top:8px}.metric .hint{font-size:12px;color:var(--muted);margin-top:4px}
+.content{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.85fr);gap:16px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.panel h2{font-size:17px;margin:0}.pill{border-radius:99px;padding:4px 8px;font-size:11px;font-weight:750;display:inline-block}.pill.red{background:var(--red);color:#9b2828}.pill.amber{background:var(--amber);color:#815410}.pill.green{background:var(--teal2);color:#12685f}
+.controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}input,select,textarea,button{font:inherit}input,select,textarea{border:1px solid #cbd9dc;background:#fff;border-radius:9px;padding:10px 11px;color:var(--ink);min-width:0}input{flex:1}select{max-width:100%}
+.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:530px}th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.45px;padding:10px 8px;border-bottom:1px solid var(--line)}td{padding:13px 8px;border-bottom:1px solid #edf1f2;font-size:13px}tbody tr{cursor:pointer}tbody tr:hover,tbody tr.selected{background:#edf8f5}tbody tr:last-child td{border-bottom:0}.client{font-weight:750}.small{font-size:11px;color:var(--muted);margin-top:2px}.amount{font-weight:800;white-space:nowrap}
+.detail-empty{padding:26px 8px;text-align:center;color:var(--muted)}.detail-title{font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:3px}.detail-id{color:var(--muted);font-size:12px;margin-bottom:16px}.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.fact{background:#f5f8f8;border-radius:10px;padding:11px}.fact label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}.fact strong{font-size:15px}.actions{display:grid;gap:9px;margin-top:15px}.btn{border:0;border-radius:10px;padding:11px 13px;font-weight:750;cursor:pointer;text-align:center}.btn.primary{background:var(--teal);color:white}.btn.secondary{background:#edf4f4;color:#23444c;border:1px solid #d7e3e5}.btn:disabled{opacity:.45;cursor:not-allowed}.section-label{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:18px 0 8px}.draft{background:#f6f9f9;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}.draft textarea{width:100%;min-height:150px;resize:vertical;margin-top:8px;font-size:13px}.draft input{width:100%;margin-top:8px}.footer-note{font-size:12px;color:var(--muted);margin-top:18px}.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#102b35;color:white;padding:12px 16px;border-radius:10px;box-shadow:0 8px 30px #0002;max-width:90vw;display:none;z-index:10}
+@media(max-width:820px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.content{grid-template-columns:1fr}.intro{align-items:start}.panel{padding:14px}}
+@media(max-width:400px){.metrics{gap:8px}.metric{padding:12px}.metric .value{font-size:22px}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">Impresa<span>Flow</span> Incassi</div><div class="subbrand">Il tuo business, sotto controllo.</div></div><div class="demo">PROTOTIPO · DATI FITTIZI</div></header>
+<main>
+<div class="intro"><div><h1>Controlla gli incassi.</h1><p>Le scadenze, le promesse e le prossime azioni in un unico posto.</p></div><button class="btn secondary" id="reset">Ripristina demo</button></div>
+<div class="note"><strong>Ambiente dimostrativo:</strong> i nominativi e gli importi sono inventati. I dati restano solo in memoria durante questa sessione; non vengono salvati su un server, non vengono inviate email e non viene registrato alcun pagamento reale.</div>
+<section class="metrics" aria-label="Riepilogo">
+<div class="metric"><div class="label">DA INCASSARE (DEMO)</div><div class="value" id="total">€ 0</div><div class="hint">Saldo residuo non verificato</div></div>
+<div class="metric"><div class="label">FATTURE SCADUTE</div><div class="value" id="overdue">0</div><div class="hint">Da controllare</div></div>
+<div class="metric"><div class="label">PROMESSE DI PAGAMENTO</div><div class="value" id="promises">0</div><div class="hint">Da seguire</div></div>
+<div class="metric"><div class="label">CONTESTATE / SOSPESE</div><div class="value" id="disputed">0</div><div class="hint">Niente solleciti automatici</div></div>
+</section>
+<div class="content">
+<section class="panel">
+<div class="panel-head"><h2>Registro fatture</h2><span class="pill amber">Esempio</span></div>
+<div class="controls"><input id="search" type="search" placeholder="Cerca cliente o fattura…" aria-label="Cerca"><select id="filter" aria-label="Filtra stato"><option value="all">Tutti gli stati</option><option value="overdue">Scadute</option><option value="promise">Promessa</option><option value="disputed">Contestata</option><option value="open">Aperte</option></select></div>
+<div class="table-wrap"><table><thead><tr><th>Cliente / fattura</th><th>Scadenza</th><th>Residuo</th><th>Stato</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="footer-note">Seleziona una riga per visualizzare il dettaglio e preparare una bozza.</div>
+</section>
+<section class="panel" id="detail"><div class="detail-empty">Seleziona una fattura per vedere il dettaglio.</div></section>
+</div>
+<div class="footer-note">Prototipo di flusso, non software contabile o servizio di recupero crediti. Prima di usare dati reali servono backend autenticato, controlli di sicurezza, verifiche normative e test.</div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const seed = [
+{id:'IF-DEMO-026',number:'FT-2026-026',client:'Studio Verdi',desc:'Consulenza gestionale',due:'2026-09-15',amount:2400,paid:0,state:'overdue',promise:'',dispute:''},
+{id:'IF-DEMO-031',number:'FT-2026-031',client:'Edilizia Rossi',desc:'Lavori di manutenzione',due:'2026-09-28',amount:1850,paid:500,state:'promise',promise:'2026-10-16',dispute:''},
+{id:'IF-DEMO-034',number:'FT-2026-034',client:'Officina Bianchi',desc:'Fornitura e installazione',due:'2026-10-02',amount:760,paid:0,state:'disputed',promise:'',dispute:'Il cliente chiede una verifica della fattura.'},
+{id:'IF-DEMO-039',number:'FT-2026-039',client:'Alfa Servizi',desc:'Intervento tecnico',due:'2026-10-22',amount:920,paid:0,state:'open',promise:'',dispute:''},
+{id:'IF-DEMO-041',number:'FT-2026-041',client:'Mondo Casa',desc:'Manutenzione ordinaria',due:'2026-09-05',amount:1320,paid:320,state:'overdue',promise:'',dispute:''}
+];
+let invoices = structuredClone(seed), selected = invoices[0]?.id, drafts = {};
+const euro = n => new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(n);
+const date = s => s ? new Date(s+'T12:00:00').toLocaleDateString('it-IT') : '—';
+const remaining = i => Math.max(0,i.amount-i.paid);
+const stateLabel = s => ({overdue:'Scaduta',promise:'Promessa',disputed:'Sospesa',open:'In scadenza',payment_pending:'Pagamento da verificare',closed:'Saldata'}[s]||s);
+const stateClass = s => ({overdue:'red',promise:'amber',disputed:'amber',open:'green',payment_pending:'amber',closed:'green'}[s]||'amber');
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>el.style.display='none',2800)}
+function render(){
+ const due=invoices.filter(i=>!['closed','disputed'].includes(i.state));
+ document.getElementById('total').textContent=euro(due.reduce((s,i)=>s+remaining(i),0));
+ document.getElementById('overdue').textContent=invoices.filter(i=>i.state==='overdue').length;
+ document.getElementById('promises').textContent=invoices.filter(i=>i.state==='promise').length;
+ document.getElementById('disputed').textContent=invoices.filter(i=>i.state==='disputed').length;
+ const q=document.getElementById('search').value.toLowerCase(),f=document.getElementById('filter').value;
+ const visible=invoices.filter(i=>(i.client+' '+i.number).toLowerCase().includes(q)&&(f==='all'||(f==='open'&&i.state==='open')||(f==='overdue'&&i.state==='overdue')||(f==='promise'&&i.state==='promise')||(f==='disputed'&&i.state==='disputed')));
+ document.getElementById('rows').innerHTML=visible.map(i=>'<tr data-id="'+i.id+'" class="'+(selected===i.id?'selected':'')+'"><td><div class="client">'+i.client+'</div><div class="small">'+i.number+'</div></td><td>'+date(i.due)+'</td><td class="amount">'+euro(remaining(i))+'</td><td><span class="pill '+stateClass(i.state)+'">'+stateLabel(i.state)+'</span></td></tr>').join('')||'<tr><td colspan="4">Nessun risultato.</td></tr>';
+ document.querySelectorAll('#rows tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>{selected=tr.dataset.id;render()}));
+ renderDetail();
+}
+function renderDetail(){
+ const i=invoices.find(x=>x.id===selected),el=document.getElementById('detail');
+ if(!i){el.innerHTML='<div class="detail-empty">Seleziona una fattura.</div>';return}
+ const isHold=i.state==='disputed'||i.state==='closed';
+ const draft=drafts[i.id];
+ el.innerHTML='<div class="panel-head"><h2>Dettaglio fattura</h2><span class="pill '+stateClass(i.state)+'">'+stateLabel(i.state)+'</span></div>'+
+ '<div class="detail-title">'+i.client+'</div><div class="detail-id">'+i.number+' · '+i.id+'</div>'+
+ '<div>'+i.desc+'</div><div class="facts"><div class="fact"><label>Scadenza</label><strong>'+date(i.due)+'</strong></div><div class="fact"><label>Importo iniziale</label><strong>'+euro(i.amount)+'</strong></div><div class="fact"><label>Pagamenti inseriti in demo</label><strong>'+euro(i.paid)+'</strong></div><div class="fact"><label>Residuo indicativo</label><strong>'+euro(remaining(i))+'</strong></div></div>'+
+ (i.state==='disputed'?'<div class="note">Sospesa: '+i.dispute+' La sequenza standard di sollecito è bloccata.</div>':'')+
+ (i.state==='promise'?'<div class="note">Promessa registrata per '+date(i.promise)+'. Una promessa non equivale a un pagamento ricevuto.</div>':'')+
+ '<div class="actions"><button class="btn primary" id="makeDraft" '+(isHold||remaining(i)<=0?'disabled':'')+'>Prepara bozza di sollecito</button><button class="btn secondary" id="promiseBtn" '+(isHold||remaining(i)<=0?'disabled':'')+'>Registra promessa di pagamento</button><button class="btn secondary" id="paymentBtn" '+(i.state==='closed'||remaining(i)<=0?'disabled':'')+'>Simula registrazione pagamento</button>'+(i.state==='disputed'?'<button class="btn secondary" id="resumeBtn">Riapri dopo verifica (demo)</button>':'')+'</div>'+
+ (draft?'<div class="draft"><strong>Bozza — non inviata</strong><input id="draftSubject" aria-label="Oggetto" value="'+esc(draft.subject)+'"><textarea id="draftBody" aria-label="Testo bozza">'+esc(draft.body)+'</textarea><div class="actions"><button class="btn primary" id="copyDraft">Copia testo</button><button class="btn secondary" id="clearDraft">Elimina bozza</button></div><div class="small">Nessun messaggio viene spedito. Controlla importo, destinatario e documenti prima di qualsiasi uso reale.</div></div>':'');
+ document.getElementById('makeDraft')?.addEventListener('click',()=>{drafts[i.id]={subject:'Promemoria amministrativo — '+i.number,body:'Buongiorno,\n\ncon la presente desideriamo chiedere una verifica dello stato di pagamento della fattura '+i.number+', con scadenza '+date(i.due)+' e saldo indicativo di '+euro(remaining(i))+'.\n\nSe il pagamento è già stato effettuato, vi preghiamo di ignorare questo messaggio e, se possibile, inviarci gli estremi per la riconciliazione. In caso di necessità o contestazioni, restiamo a disposizione per verificare insieme la situazione.\n\nCordiali saluti'};render();toast('Bozza creata solo nel prototipo.')});
+ document.getElementById('promiseBtn')?.addEventListener('click',()=>{const d=prompt('Data promessa (AAAA-MM-GG):','2026-10-16');if(!d)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||Number.isNaN(Date.parse(d))){toast('Inserisci una data valida.');return}i.promise=d;i.state='promise';render();toast('Promessa annotata nella demo, non è un pagamento.')});
+ document.getElementById('paymentBtn')?.addEventListener('click',()=>{const v=prompt('Importo ricevuto (es. 250,00):','250,00');if(v===null)return;const n=Number(v.replace(',','.'));if(!Number.isFinite(n)||n<=0||n>remaining(i)){toast('Importo non valido: deve essere maggiore di zero e non superare il residuo.');return}if(!confirm('Demo: annotare '+euro(n)+' come pagamento inserito, non verificato?'))return;i.paid=Math.round((i.paid+n)*100)/100;if(remaining(i)===0)i.state='payment_pending';render();toast('Pagamento annotato in demo; il saldo non è chiuso finché non viene verificato.')});
+ document.getElementById('resumeBtn')?.addEventListener('click',()=>{if(confirm('La contestazione è stata verificata fuori da questo prototipo?')){i.state='overdue';i.dispute='';render();toast('Riaperta nella demo. Verificare prima di agire realmente.')}});
+ document.getElementById('copyDraft')?.addEventListener('click',()=>{const text=document.getElementById('draftSubject').value+'\n\n'+document.getElementById('draftBody').value;const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Testo copiato, se consentito dal browser.')}catch(e){toast('Seleziona e copia il testo manualmente.')}ta.remove()});
+ document.getElementById('clearDraft')?.addEventListener('click',()=>{delete drafts[i.id];render()});
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.getElementById('search').addEventListener('input',render);
+document.getElementById('filter').addEventListener('change',render);
+document.getElementById('reset').addEventListener('click',()=>{invoices=structuredClone(seed);drafts={};selected=invoices[0].id;render();toast('Dati demo ripristinati.')});
+render();
+</script>
+</body>
+</html>
