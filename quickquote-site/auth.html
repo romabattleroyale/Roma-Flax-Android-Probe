@@ -73,11 +73,13 @@ $('authForm').addEventListener('submit',async event=>{
       const name=$('name').value.trim();
       const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name}}});
       if(error) throw error;
-      message(data.session?'Account creato. La base del profilo è pronta.':'Controlla la tua email per confermare la registrazione.');
+      if (data.session) { message('Account creato. Apro il tuo spazio di lavoro…'); location.assign('./workspace.html'); }
+      else { message('Registrazione avviata: controlla la tua email per confermare l’account. Dopo la conferma torna qui e accedi.'); }
     } else {
       const {data,error}=await client.auth.signInWithPassword({email,password});
       if(error) throw error;
-      message('Accesso riuscito. La pagina dei preventivi sarà collegata dopo l'integrazione del database.');
+      message('Accesso riuscito. Apro il tuo spazio di lavoro…');
+      location.assign('./workspace.html');
     }
   } catch(error) { message(error.message||'Operazione non riuscita. Riprova.', 'error'); }
   finally {button.disabled=false}
@@ -89,7 +91,16 @@ $('reset').addEventListener('click',async()=>{
   try { const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname}); if(error) throw error; message('Se l’indirizzo è registrato, riceverai le istruzioni per reimpostare la password.');}
   catch(error){message(error.message||'Impossibile inviare la richiesta.','error')}
 });
-setMode('login');
+setMode(new URLSearchParams(location.search).get('mode') === 'signup' ? 'signup' : 'login');
+
+// Once configured, send an existing session straight to the online workspace.
+if (client) {
+  client.auth.getSession().then(({data,error}) => {
+    if (!error && data.session && new URLSearchParams(location.search).get('mode') !== 'reset') {
+      location.replace('./workspace.html');
+    }
+  });
+}
 </script>
 </body>
 </html>
