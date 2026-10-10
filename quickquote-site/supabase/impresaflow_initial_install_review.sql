@@ -612,3 +612,26 @@ for each row execute function public.incassi_guard_installment_payment();
 -- * Implement trusted server-side RPCs for payment verification, reminder approval/sending,
 --   plan acceptance, atomic balance calculation and audit event insertion.
 -- * Validate actual email sending, privacy notices, retention/export/deletion and backups.
+
+
+-- Prevent authenticated browser clients from changing accounting-critical invoice fields.
+create or replace function public.incassi_guard_invoice_accounting_fields()
+returns trigger language plpgsql as $$
+begin
+  if auth.uid() is not null and tg_op = 'UPDATE' then
+    if new.user_id is distinct from old.user_id
+      or new.customer_id is distinct from old.customer_id
+      or new.invoice_number is distinct from old.invoice_number
+      or new.original_amount_cents is distinct from old.original_amount_cents
+      or new.status is distinct from old.status then
+      raise exception 'Invoice ownership, identity, amount and status require a trusted server-side workflow';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists incassi_invoices_guard_accounting_fields on public.incassi_invoices;
+create trigger incassi_invoices_guard_accounting_fields
+before update on public.incassi_invoices
+for each row execute function public.incassi_guard_invoice_accounting_fields();
