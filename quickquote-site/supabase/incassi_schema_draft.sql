@@ -411,3 +411,27 @@ drop trigger if exists incassi_installments_guard_payment on public.incassi_inst
 create trigger incassi_installments_guard_payment
 before insert or update on public.incassi_installments
 for each row execute function public.incassi_guard_installment_payment();
+
+
+-- Prevent authenticated browser clients from changing accounting-critical invoice fields.
+-- Trusted server-side workflows must perform state transitions and write audit events.
+create or replace function public.incassi_guard_invoice_accounting_fields()
+returns trigger language plpgsql as $$
+begin
+  if auth.uid() is not null and tg_op = 'UPDATE' then
+    if new.user_id is distinct from old.user_id
+      or new.customer_id is distinct from old.customer_id
+      or new.invoice_number is distinct from old.invoice_number
+      or new.original_amount_cents is distinct from old.original_amount_cents
+      or new.status is distinct from old.status then
+      raise exception 'Invoice ownership, identity, amount and status require a trusted server-side workflow';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists incassi_invoices_guard_accounting_fields on public.incassi_invoices;
+create trigger incassi_invoices_guard_accounting_fields
+before update on public.incassi_invoices
+for each row execute function public.incassi_guard_invoice_accounting_fields();
