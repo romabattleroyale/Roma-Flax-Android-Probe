@@ -385,3 +385,29 @@ for each row execute function public.incassi_guard_plan_acceptance();
 
 -- Client-provided activity history is not authoritative; event inserts are reserved
 -- for a trusted backend function with validated ownership and sanitized metadata.
+
+
+-- Browser clients cannot mark installments paid or attach an authoritative payment.
+-- A trusted server-side verification workflow must update this state atomically.
+create or replace function public.incassi_guard_installment_payment()
+returns trigger language plpgsql as $$
+begin
+  if auth.uid() is not null then
+    if tg_op = 'INSERT' and (new.status <> 'scheduled' or new.payment_id is not null) then
+      raise exception 'Installments must start scheduled without a payment';
+    end if;
+    if tg_op = 'UPDATE' and (
+      new.status is distinct from old.status
+      or new.payment_id is distinct from old.payment_id
+    ) then
+      raise exception 'Installment payment status requires a trusted server-side workflow';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists incassi_installments_guard_payment on public.incassi_installments;
+create trigger incassi_installments_guard_payment
+before insert or update on public.incassi_installments
+for each row execute function public.incassi_guard_installment_payment();
