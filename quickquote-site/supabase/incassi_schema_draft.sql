@@ -25,6 +25,12 @@ create table if not exists public.incassi_invoices (
   check (length(trim(invoice_number)) > 0)
 );
 
+-- PostgreSQL requires a unique key on the referenced column pair before
+-- the composite foreign key can be created. Verify this index is compatible
+-- with the existing customers table before applying the draft.
+create unique index if not exists customers_id_user_id_uidx
+  on public.customers(id, user_id);
+
 -- Composite FK guarantees that an invoice cannot point at another user's customer.
 alter table public.incassi_invoices
   drop constraint if exists incassi_invoice_customer_owner_fk;
@@ -33,10 +39,6 @@ alter table public.incassi_invoices
   foreign key (customer_id, user_id)
   references public.customers(id, user_id)
   on delete restrict;
-
--- Required by the composite foreign key above; safe if the equivalent uniqueness is absent.
-create unique index if not exists customers_id_user_id_uidx
-  on public.customers(id, user_id);
 
 create table if not exists public.incassi_payments (
   id uuid primary key default gen_random_uuid(),
@@ -208,16 +210,25 @@ for insert to authenticated with check (
     where i.id = invoice_id and i.user_id = (select auth.uid())
   )
 );
+-- Browser users may correct/delete only pending payment entries.
+-- Verified/rejected records are immutable to browser clients and require a
+-- trusted, audited server-side correction workflow.
 drop policy if exists incassi_payments_update_own on public.incassi_payments;
 create policy incassi_payments_update_own on public.incassi_payments
-for update to authenticated using (user_id = (select auth.uid()))
-with check (user_id = (select auth.uid()) and exists (
-  select 1 from public.incassi_invoices i
-  where i.id = invoice_id and i.user_id = (select auth.uid())
-));
+for update to authenticated using (
+  user_id = (select auth.uid()) and verification_status = 'pending'
+) with check (
+  user_id = (select auth.uid()) and verification_status = 'pending'
+  and exists (
+    select 1 from public.incassi_invoices i
+    where i.id = invoice_id and i.user_id = (select auth.uid())
+  )
+);
 drop policy if exists incassi_payments_delete_own on public.incassi_payments;
 create policy incassi_payments_delete_own on public.incassi_payments
-for delete to authenticated using (user_id = (select auth.uid()));
+for delete to authenticated using (
+  user_id = (select auth.uid()) and verification_status = 'pending'
+);
 
 -- Reminder policies: users can edit their own drafts. Approval/sending should be
 -- moved to a server-side RPC that validates role, invoice status and recipient.
