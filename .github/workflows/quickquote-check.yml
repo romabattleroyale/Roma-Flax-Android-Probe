@@ -117,5 +117,12 @@ jobs:
           missing = [item for item in required if item not in sql]
           if missing:
               raise SystemExit('Missing Incassi safeguards: ' + '; '.join(missing))
-          print('Incassi safeguard text checks: OK (not a SQL execution or security test)')
+          # Catch malformed dollar-quoted PL/pgSQL blocks in this draft.
+          if 'returns trigger language plpgsql as $\nbegin' in sql:
+              raise SystemExit('Malformed PL/pgSQL dollar quote in Incassi draft')
+          if sql.count('$') % 2:
+              raise SystemExit('Unbalanced PL/pgSQL dollar quotes in Incassi draft')
+          if 'incassi_guard_installment_payment' not in sql:
+              raise SystemExit('Missing guard against client-side installment payment state changes')
+          print('Incassi safeguard and basic SQL delimiter checks: OK (not a SQL execution or security test)')
           PY
